@@ -2,71 +2,76 @@ package controller;
 
 import model.LineObj;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.function.Function;
-//los numeros estan separados por comas no por puntos
-// el tema esta en cuando no hay "" entra en el atributo directo , si hay "" leemos desde la 1 hasta encontrar la 2  y lo metenmos en el atributo
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class Logic {
     List<LineObj> outPutData;
-    public void readFile(){
+
+    public void readFile() {
         Path path = Paths.get("peliculas.csv");
+        String regex = "([^,\"]+)|\"([^\"]*)\"";
 
-        Function<String, LineObj> convertidor = p -> {
-            //String[] a = p.split("\"");
-          //  String[] a = p.split(",");
-            String [] a = new String[]{p.replace(",", ".")};
+        Function<String, LineObj> convertidor = line -> {
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(line);
+            List<String> otra = new ArrayList<>();
 
-            for (int i = 0; i < a.length; i++) {
-                System.out.print(a[i]);
-
+            while (matcher.find()) {
+                // Si el grupo 1 está vacío, significa que es un campo con comillas dobles
+                if (matcher.group(1) == null) {
+                    otra.add(matcher.group(2));
+                } else {
+                    otra.add(matcher.group(1));
+                }
             }
 
+            System.out.println(otra);
+            // Aquí debes construir tu objeto LineObj con los datos de 'otra'
+            // ...
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+            try {
+                // Convierte la cadena a un objeto Date
+                Date date = dateFormat.parse(otra.get(4));
 
+                // Imprime el objeto Date
+                System.out.println("Fecha en formato Date: " + date);
+            } catch (ParseException e) {
+                e.printStackTrace();
+                System.err.println("No se pudo parsear la fecha: " + e.getMessage());
+            }
 
-            //MIRAR ESTO PORQUE VAMOS......
-   //         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MMM-dd hh-mm-ss", Locale.ENGLISH);
-//            String c = a[4];
-//            try {
-//                Date date = new SimpleDateFormat("yyyy-MMM-dd hh-mm-ss").parse(a[4]);
-//                return new LineObj(Integer.parseInt(a[0]), a[1], Integer.parseInt(a[2]), Integer.parseInt(a[3]), date, a[5]);
-//
-//            } catch (ParseException e) {
-//                throw new RuntimeException(e);
-//            }
-
-
-            return null;
+            try {
+                return new LineObj(Integer.parseInt(otra.get(0)), otra.get(1),Float.parseFloat(otra.get(2)),Float.parseFloat(otra.get(3)), dateFormat.parse(otra.get(4)) ,otra.get(5) );  // Debes devolver el objeto LineObj construido
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
         };
 
         try {
-            if (fileExist(path.toFile())){
-                outPutData=Files.lines(path).skip(1).map(convertidor).toList();
+            if (fileExist(path.toFile())) {
+                outPutData = Files.lines(path).skip(1).map(convertidor).toList();
                 System.out.println(outPutData);
-
-
-            }else{
-
             }
-
-        }catch (Exception e){
-            e.printStackTrace();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-
-
-
-
     }
+
+    // Resto del código
 
     private static boolean fileExist(File file) {
         boolean exist;
@@ -78,5 +83,4 @@ public class Logic {
 }
 
 
-//          return new LineObj(Integer.parseInt(a[0]),a[1],Integer.parseInt(a[2]),Integer.parseInt(a[3]),formatter.parse(a[4]),a[5]);
 
