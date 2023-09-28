@@ -7,6 +7,7 @@ public class Main {
     public static void main(String[] args) {
         Logic a = new Logic();
         a.readFile();
+        a.FilmsPerMonth();
 
 //
 //        String linea = "1,Barbie,\"4,337\",\"$594,254,460\",2023-07-21 00:00:00,Warner Bros.";

@@ -2,20 +2,19 @@ package controller;
 
 import model.LineObj;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
+import java.sql.Date;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.sql.*;
+import java.util.stream.Collectors;
+//IMPORTAR SIEMPRE EL DATE DE SQL
 
 public class Logic {
     List<LineObj> outPutData;
@@ -25,46 +24,41 @@ public class Logic {
         String regex = "([^,\"]+)|\"([^\"]*)\"";
 
         Function<String, LineObj> convertidor = line -> {
+
             Pattern pattern = Pattern.compile(regex);
             Matcher matcher = pattern.matcher(line);
             List<String> otra = new ArrayList<>();
 
             while (matcher.find()) {
-                // Si el grupo 1 está vacío, significa que es un campo con comillas dobles
                 if (matcher.group(1) == null) {
                     otra.add(matcher.group(2));
                 } else {
                     otra.add(matcher.group(1));
                 }
             }
+          //  System.out.println(otra);
+//            System.out.println(otra.get(0));
+//            System.out.println(otra.get(1));
+//            System.out.println(otra.get(2).replace(",","."));
+//            System.out.println(otra.get(3).replace(",","."));
+//            System.out.println(otra.get(4));
+//            System.out.println(otra.get(5));
+//            System.out.println("------------------------------");
+//             System.out.println(otra);
 
-            System.out.println(otra);
-            // Aquí debes construir tu objeto LineObj con los datos de 'otra'
-            // ...
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-            try {
-                // Convierte la cadena a un objeto Date
-                Date date = dateFormat.parse(otra.get(4));
-
-                // Imprime el objeto Date
-                System.out.println("Fecha en formato Date: " + date);
-            } catch (ParseException e) {
-                e.printStackTrace();
-                System.err.println("No se pudo parsear la fecha: " + e.getMessage());
-            }
-
-            try {
-                return new LineObj(Integer.parseInt(otra.get(0)), otra.get(1),Float.parseFloat(otra.get(2)),Float.parseFloat(otra.get(3)), dateFormat.parse(otra.get(4)) ,otra.get(5) );  // Debes devolver el objeto LineObj construido
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
+            //  return (LineObj) outPutData;
+                return new LineObj(Integer.parseInt(otra.get(0)), 
+                        otra.get(1),
+                        Integer.parseInt(otra.get(2).replace(",","").replace("'-","-1")),
+                        Integer.parseInt(otra.get(3).replace(",","").replace("$","")),
+                        Date.valueOf(otra.get(4).replace(" 00:00:00","")) ,
+                        otra.get(5));
         };
 
         try {
             if (fileExist(path.toFile())) {
                 outPutData = Files.lines(path).skip(1).map(convertidor).toList();
-                System.out.println(outPutData);
+               System.out.println(outPutData);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -77,6 +71,28 @@ public class Logic {
         boolean exist;
         exist = Files.exists(Paths.get(file.toURI()));
         return exist;
+    }
+
+
+
+
+//
+// agrupar por mes las que mas recaudacion tienen
+        public Date getByMonth(){
+
+      // outPutData.stream().filter().collect(groupingBY(LineObj::));
+
+
+        return  null;
+    }
+//) Indica cuantas películas se estrenaron en cada mes
+
+    public void FilmsPerMonth(){
+        System.out.println(  outPutData.stream().collect(Collectors.groupingBy(p->p.getReleaseDate().getMonth(),Collectors.counting())));
+
+
+
+
     }
 
 
