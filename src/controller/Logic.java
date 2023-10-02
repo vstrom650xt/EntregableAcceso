@@ -58,7 +58,7 @@ public class Logic {
         try {
             if (fileExist(path.toFile())) {
                 outPutData = Files.lines(path).skip(1).map(convertidor).toList();
-               System.out.println(outPutData);
+//               System.out.println(outPutData);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -78,21 +78,38 @@ public class Logic {
 
 //
 // agrupar por mes las que mas recaudacion tienen
-        public Date getByMonth(){
+//        public Date getByMonth(){
+//
+//       outPutData.stream().filter().collect(groupingBY(LineObj::));
+//
+//
+//        return  null;
+//    }
 
-      // outPutData.stream().filter().collect(groupingBY(LineObj::));
 
-
-        return  null;
-    }
-//) Indica cuantas películas se estrenaron en cada mes
+//) Indica cuantas películas se estrenaron en cada mes  YA VA
 
     public void FilmsPerMonth(){
-        System.out.println(  outPutData.stream().collect(Collectors.groupingBy(p->p.getReleaseDate().getMonth(),Collectors.counting())));
+        System.out.println(  outPutData.stream().collect(Collectors.groupingBy(p->p.getReleaseDate().getMonth()+1,Collectors.counting())));
+    }
+// Indica cual es la película que tuvo la mayor recaudación habiéndose estrenado
+//en el menor número de cines.
 
+    public void lessCinemaMoreGross() {
+        // Filtrar las películas que se estrenaron en menos de 50 cines
+        List<LineObj> filteredMovies = outPutData.stream()
+                .filter(p -> p.getTheaters() < 50)
+                .toList();
 
+        // Encontrar la película con la mayor recaudación entre las filtradas
+        Optional<LineObj> maxGrossMovie = filteredMovies.stream()
+                .max(Comparator.comparing(LineObj::getTotalGross));
 
-
+        if (maxGrossMovie.isPresent()) {
+            System.out.println("La película con la mayor recaudación en menos de 50 cines es: " + maxGrossMovie.get().getTitle() + " con  " + maxGrossMovie.get().getTotalGross());
+        } else {
+            System.out.println("No se encontraron películas que cumplan con el criterio.");
+        }
     }
 
 
