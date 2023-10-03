@@ -14,10 +14,10 @@ public class LineObj {
     public LineObj(int rank, String title, int theaters, int totalGross, Date releaseDate, String distributor) {
         this.rank = rank;
         this.title = title;
-        Theaters = theaters;
-        TotalGross = totalGross;
-        ReleaseDate = releaseDate;
-        Distributor = distributor;
+        this.Theaters = theaters;
+        this.TotalGross = totalGross;
+        this.ReleaseDate = releaseDate;
+        this.Distributor = distributor;
     }
 
     public int getRank() {
