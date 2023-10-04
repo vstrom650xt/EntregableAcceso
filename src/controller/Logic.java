@@ -65,6 +65,19 @@ public class Logic {
         }
     }
 
+    public void run() {
+        readFile();
+        groupMoviesByMonthWithHighestGross(); //funciona
+        FilmsPerMonth(); //funciona
+    //    findMovieWithHighestGrossAndlessTheater();//mal
+        countMoviesPerDistributor(); //funciona
+        findDistributorWithLowestTotalGross();
+        findMinMaxGrossPerDistributor(); //funciona
+        findWorstReleaseMonthPerDistributor(); // mas o menos ... por que '- no es una distri
+
+
+    }
+
 
     private static boolean fileExist(File file) {
         boolean exist;
@@ -78,13 +91,13 @@ public class Logic {
     public static void groupMoviesByMonthWithHighestGross() {
 
         Map<String, List<LineObj>> moviesPerMonth = outPutData.stream()
-                .collect(Collectors.groupingBy(movie -> new SimpleDateFormat("MM").format(movie.getReleaseDate())));
+                .collect(Collectors.groupingBy(p -> new SimpleDateFormat("MM").format(p.getReleaseDate())));
 
 
         moviesPerMonth.forEach((month, moviesList) -> {
             System.out.println("Month: " + month);
             System.out.println("Movies with highest gross:");
-            moviesList.forEach(movie -> System.out.println(movie.getTitle() + " - Total Gross: " + movie.getTotalGross()));
+            moviesList.forEach(p -> System.out.println(p.getTitle() + " - Total Gross: " + p.getTotalGross()));
             System.out.println();
         });
     }
@@ -92,28 +105,33 @@ public class Logic {
 // b) Indica cuantas películas se estrenaron en cada mes  YA VA
 
     public void FilmsPerMonth() {
-        System.out.println(outPutData.stream().collect(Collectors.groupingBy(p -> p.getReleaseDate().getMonth() + 1, Collectors.counting())));
+        Map<Integer, Long> moviesPerMonth = outPutData.stream()
+                .collect(Collectors.groupingBy(p -> p.getReleaseDate().getMonth() + 1, Collectors.counting()));
+
+        moviesPerMonth.forEach((month, count) -> {
+            System.out.println("Month " + month + " -> " + count + " movies");
+        });
     }
 // c)Indica cual es la película que tuvo la mayor recaudación habiéndose estrenado
 //en el menor número de cines.
 
-    public static void findMovieWithHighestGrossAndlessTheater() {
-        outPutData.stream()
-                .min(Comparator.comparingInt(LineObj::getTheaters))  // Find the movie with the fewest theaters
-                .filter(movie -> movie.getTotalGross() == outPutData.stream()
-                        .mapToInt(LineObj::getTotalGross)
-                        .max()
-                        .orElse(0));  // Filter by the highest total gross
+//    public static void findMovieWithHighestGrossAndlessTheater() {
+//        outPutData.stream()
+//                .min(Comparator.comparingInt(LineObj::getTheaters))
+//                .filter(p -> p.getTotalGross() == outPutData.stream()
+//                        .mapToInt(LineObj::getTotalGross)
+//                        .max()
+//                        .orElse(0));  // Filter by the highest total gross
+//
+//        outPutData.forEach(p -> {
+//            System.out.println("Title: " + p.getTitle() + " Total Gross: " + p.getTotalGross() +  "Number of Theaters: " +  p.getTheaters());
+//
+//        });
+//
+//    }
 
-        outPutData.forEach(movie -> {
-            System.out.println("Title: " + movie.getTitle() + " Total Gross: " + movie.getTotalGross() +  "Number of Theaters: " +  movie.getTheaters());
 
-        });
-
-    }
-
-
-//d)Indica cuantas películas de la lista pertenecen a cada distribuidor
+    //d)Indica cuantas películas de la lista pertenecen a cada distribuidor
     public static void countMoviesPerDistributor() {
         Map<String, Long> moviesPerDistributor = outPutData.stream()
                 .collect(Collectors.groupingBy(LineObj::getDistributor, Collectors.counting()));
@@ -124,19 +142,14 @@ public class Logic {
     }
 
 
-
-
-
-
 //e)    Indica cual de las distribuidoras ha tenido menor recaudación
 
     public static void findDistributorWithLowestTotalGross() {
         Map<String, Integer> totalGrossPerDistributor = new HashMap<>();
 
-        // Calculate the total gross revenue for each distributor
-        outPutData.forEach(movie -> {
-            String distributor = movie.getDistributor();
-            int totalGross = movie.getTotalGross();
+        outPutData.forEach(p -> {
+            String distributor = p.getDistributor();
+            int totalGross = p.getTotalGross();
 
             totalGrossPerDistributor.put(distributor, totalGrossPerDistributor.getOrDefault(distributor, 0) + totalGross);
         });
@@ -154,14 +167,12 @@ public class Logic {
     }
 
 //f)Indica de cada distribuidora la película que ha recaudado más y la que ha
-  //  recaudado menos
+    //  recaudado menos
 
     public void findMinMaxGrossPerDistributor() {
-        // Agrupar las películas por distribuidora
         Map<String, List<LineObj>> moviesByDistributor = outPutData.stream()
                 .collect(Collectors.groupingBy(LineObj::getDistributor));
 
-        // Iterar sobre cada distribuidora y encontrar la película con mayor y menor recaudación
         for (Map.Entry<String, List<LineObj>> entry : moviesByDistributor.entrySet()) {
             String distributor = entry.getKey();
             List<LineObj> movies = entry.getValue();
@@ -172,23 +183,18 @@ public class Logic {
             Optional<LineObj> minGrossMovie = movies.stream()
                     .min(Comparator.comparing(LineObj::getTotalGross));
 
-            // Imprimir la película que ha recaudado más y menos para esta distribuidora
-            maxGrossMovie.ifPresent(movie -> System.out.println("Para la distribuidora " + distributor +
-                    ", la película que ha recaudado más es: " + movie.getTitle() +
-                    ", con una recaudación de " + movie.getTotalGross()));
+            maxGrossMovie.ifPresent(p -> System.out.println("For the Distributor " + distributor +
+                    ", the film with the best gross is " + p.getTitle() +
+                    ", with this gross " + p.getTotalGross()));
 
-            minGrossMovie.ifPresent(movie -> System.out.println("Para la distribuidora " + distributor +
-                    ", la película que ha recaudado menos es: " + movie.getTitle() +
-                    ", con una recaudación de " + movie.getTotalGross()));
+            minGrossMovie.ifPresent(p -> System.out.println("For the Distributor " + distributor +
+                    ", the film with the worst gross is : " + p.getTitle() +
+                    ", with this gross  " + p.getTotalGross()));
         }
     }
 
 
     //g)Indica cual ha sido el peor mes de estreno para cada distribuidora
-
-
-
-
     public void findWorstReleaseMonthPerDistributor() {
         Map<String, String> worstReleaseMonths = new HashMap<>();
 
@@ -196,7 +202,6 @@ public class Logic {
             String distributor = movie.getDistributor();
             String currentWorstMonth = worstReleaseMonths.get(distributor);
 
-            // Si es la primera película de la distribuidora o el mes actual tiene menor recaudación
             if (currentWorstMonth == null || movie.getTotalGross() < outPutData.stream()
                     .filter(m -> m.getDistributor().equals(distributor))
                     .min(Comparator.comparing(LineObj::getTotalGross))
@@ -206,10 +211,9 @@ public class Logic {
             }
         }
 
-        // Imprimir el peor mes de estreno para cada distribuidora
         for (Map.Entry<String, String> entry : worstReleaseMonths.entrySet()) {
-            System.out.println("Para la distribuidora " + entry.getKey() +
-                    ", el peor mes de estreno fue: " + entry.getValue());
+            System.out.println("For the Distributor " + entry.getKey() +
+                    ", the worst release is : " + entry.getValue());
         }
     }
 
