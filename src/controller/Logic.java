@@ -13,9 +13,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.sql.*;
 import java.util.stream.Collectors;
-//IMPORTAR SIEMPRE EL DATE DE SQL
 
 public class Logic {
     static List<LineObj> outPutData;
@@ -66,10 +64,10 @@ public class Logic {
     }
 
     public void run() {
+        //EL APARTADO C NO LO TENGO
         readFile();
         groupMoviesByMonthWithHighestGross(); //funciona
         FilmsPerMonth(); //funciona
-    //    findMovieWithHighestGrossAndlessTheater();//mal
         countMoviesPerDistributor(); //funciona
         findDistributorWithLowestTotalGross();
         findMinMaxGrossPerDistributor(); //funciona
@@ -112,23 +110,6 @@ public class Logic {
             System.out.println("Month " + month + " -> " + count + " movies");
         });
     }
-// c)Indica cual es la película que tuvo la mayor recaudación habiéndose estrenado
-//en el menor número de cines.
-
-//    public static void findMovieWithHighestGrossAndlessTheater() {
-//        outPutData.stream()
-//                .min(Comparator.comparingInt(LineObj::getTheaters))
-//                .filter(p -> p.getTotalGross() == outPutData.stream()
-//                        .mapToInt(LineObj::getTotalGross)
-//                        .max()
-//                        .orElse(0));  // Filter by the highest total gross
-//
-//        outPutData.forEach(p -> {
-//            System.out.println("Title: " + p.getTitle() + " Total Gross: " + p.getTotalGross() +  "Number of Theaters: " +  p.getTheaters());
-//
-//        });
-//
-//    }
 
 
     //d)Indica cuantas películas de la lista pertenecen a cada distribuidor
