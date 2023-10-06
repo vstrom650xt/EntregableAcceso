@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Date;
+import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
@@ -66,12 +67,13 @@ public class Logic {
     public void run() {
         //EL APARTADO C NO LO TENGO
         readFile();
-        groupMoviesByMonthWithHighestGross(); //funciona
-        FilmsPerMonth(); //funciona
-        countMoviesPerDistributor(); //funciona
-        findDistributorWithLowestTotalGross();
-        findMinMaxGrossPerDistributor(); //funciona
-        findWorstReleaseMonthPerDistributor(); // mas o menos ... por que '- no es una distri
+//        groupMoviesByMonthWithHighestGross(); //funciona
+//        FilmsPerMonth(); //funciona
+//        moreGrosslessThreathers();
+//        countMoviesPerDistributor(); //funciona
+//        findDistributorWithLowestTotalGross();
+//        findMinMaxGrossPerDistributor(); //funciona
+       findWorstReleaseMonthPerDistributor(); // mas o menos ... por que '- no es una distri
 
 
     }
@@ -111,6 +113,33 @@ public class Logic {
         });
     }
 
+    //c) Indica cual es la película que tuvo la mayor recaudación habiéndose estrenado
+    //en el menor número de cines.
+    public void moreGrosslessThreathers() {
+        // Filtrar películas con teatros y encontrar la cantidad mínima de teatros
+        int minTheaters = outPutData.stream()
+                .filter(p -> p.getTheaters() > 0)
+                .mapToInt(LineObj::getTheaters)
+                .min()
+                .orElse(Integer.MAX_VALUE);
+
+        if (minTheaters == Integer.MAX_VALUE) {
+            System.out.println("No movies with theaters found.");
+            return;
+        }
+
+        // Filtrar las películas que tienen el menor número de teatros y encontrar la de mayor recaudación
+        List<LineObj> topGrossingMoviesWithLeastTheaters = outPutData.stream()
+                .filter(p -> p.getTheaters() == minTheaters)
+                .collect(Collectors.toList());
+            LineObj topGrossingMovie = topGrossingMoviesWithLeastTheaters.stream()
+                    .max(Comparator.comparingInt(LineObj::getTotalGross))
+                    .orElseThrow(NoSuchElementException::new);
+
+        System.out.println("Ranking: " + topGrossingMovie.getRank() + " Título: " + topGrossingMovie.getTitle() +" Cinema: " + topGrossingMovie.getTheaters() +
+                " Recaudación: " + topGrossingMovie.getTotalGross());
+
+    }
 
     //d)Indica cuantas películas de la lista pertenecen a cada distribuidor
     public static void countMoviesPerDistributor() {
@@ -175,28 +204,26 @@ public class Logic {
     }
 
 
-
-
     //g)Indica cual ha sido el peor mes de estreno para cada distribuidora
     public void findWorstReleaseMonthPerDistributor() {
-        Map<String, String> worstReleaseMonths = new HashMap<>();
+        Map<String, Integer> worstReleaseMonthTotalGross = new HashMap<>();
+        Map<String, String> monthNames = new HashMap<>();
 
         for (LineObj movie : outPutData) {
             String distributor = movie.getDistributor();
-            String currentWorstMonth = worstReleaseMonths.get(distributor);
+            int totalGross = movie.getTotalGross();
 
-            if (currentWorstMonth == null || movie.getTotalGross() < outPutData.stream()
-                    .filter(m -> m.getDistributor().equals(distributor))
-                    .min(Comparator.comparing(LineObj::getTotalGross))
-                    .orElseThrow(NoSuchElementException::new)
-                    .getTotalGross()) {
-                worstReleaseMonths.put(distributor, new SimpleDateFormat("MMMMM").format(movie.getReleaseDate()));
+            if (!worstReleaseMonthTotalGross.containsKey(distributor) ||
+                    totalGross < worstReleaseMonthTotalGross.get(distributor)) {
+                worstReleaseMonthTotalGross.put(distributor, totalGross);
+                int releaseMonth = movie.getReleaseDate().getMonth();
+                monthNames.put(distributor, new DateFormatSymbols().getMonths()[releaseMonth]);
             }
         }
 
-        for (Map.Entry<String, String> entry : worstReleaseMonths.entrySet()) {
+        for (Map.Entry<String, String> entry : monthNames.entrySet()) {
             System.out.println("For the Distributor " + entry.getKey() +
-                    ", the worst release is : " + entry.getValue());
+                    ", the worst release month is: " + entry.getValue());
         }
     }
 
